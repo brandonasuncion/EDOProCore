@@ -1,0 +1,21 @@
+module EDOProCoreCxx {
+    // header "bit.h"
+    header "card.h"
+    header "common.h"
+    header "containers_fwd.h"
+    header "duel.h"
+    header "effect_constants.h"
+    header "effect.h"
+    header "effectset.h"
+    header "field.h"
+    // header "function_array_helper.h"
+    header "group.h"
+    header "interpreter.h"
+    header "lua_obj.h"
+    header "ocgapi_types.h"
+    header "ocgapi.h"
+    header "progressivebuffer.h"
+    header "scriptlib.h"
+    
+    export *
+}
