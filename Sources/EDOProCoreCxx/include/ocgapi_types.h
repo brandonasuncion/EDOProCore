@@ -26,7 +26,8 @@ typedef enum OCG_DuelStatus {
 	OCG_DUEL_STATUS_CONTINUE
 }OCG_DuelStatus;
 
-typedef void* OCG_Duel;
+class duel;
+typedef duel* OCG_Duel;
 
 typedef struct OCG_CardData {
 	uint32_t code;

@@ -115,8 +115,8 @@ public:
 	inline int read_script(const char* name) {
 		return read_script_callback(read_script_payload, this, name);
 	}
+    std::deque<duel_message> messages;
 private:
-	std::deque<duel_message> messages;
 	RNG::Xoshiro256StarStar random;
 	OCG_DataReader read_card_callback;
 	OCG_ScriptReader read_script_callback;

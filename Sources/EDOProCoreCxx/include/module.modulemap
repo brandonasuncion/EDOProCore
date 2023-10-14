@@ -17,5 +17,6 @@ module EDOProCoreCxx {
     header "progressivebuffer.h"
     header "scriptlib.h"
     
+    requires cplusplus
     export *
 }

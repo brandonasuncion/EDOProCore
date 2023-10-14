@@ -33,7 +33,7 @@ OCGAPI int OCG_CreateDuel(OCG_Duel* out_ocg_duel, OCG_DuelOptions options) {
 	auto* duelPtr = new (std::nothrow) duel(options);
 	if(duelPtr == nullptr)
 		return OCG_DUEL_CREATION_NOT_CREATED;
-	*out_ocg_duel = static_cast<OCG_Duel>(duelPtr);
+	*out_ocg_duel = duelPtr;
 	return OCG_DUEL_CREATION_SUCCESS;
 }
 
@@ -42,8 +42,7 @@ OCGAPI void OCG_DestroyDuel(OCG_Duel ocg_duel) {
 		delete static_cast<duel*>(ocg_duel);
 }
 
-OCGAPI void OCG_DuelNewCard(OCG_Duel ocg_duel, OCG_NewCardInfo info) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void OCG_DuelNewCard(OCG_Duel pduel, OCG_NewCardInfo info) {
 	auto& game_field = *(pduel->game_field);
 	if(info.duelist == 0) {
 		if(game_field.is_location_useable(info.con, info.loc, info.seq)) {
@@ -82,13 +81,11 @@ OCGAPI void OCG_DuelNewCard(OCG_Duel ocg_duel, OCG_NewCardInfo info) {
 	}
 }
 
-OCGAPI void OCG_StartDuel(OCG_Duel ocg_duel) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void OCG_StartDuel(OCG_Duel pduel) {
 	pduel->game_field->add_process(PROCESSOR_STARTUP, 0, 0, 0, 0, 0);
 }
 
-OCGAPI int OCG_DuelProcess(OCG_Duel ocg_duel) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI int OCG_DuelProcess(OCG_Duel pduel) {
 	pduel->buff.clear();
 	auto flag = 0;
 	do {
@@ -98,26 +95,22 @@ OCGAPI int OCG_DuelProcess(OCG_Duel ocg_duel) {
 	return flag;
 }
 
-OCGAPI void* OCG_DuelGetMessage(OCG_Duel ocg_duel, uint32_t* length) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void* OCG_DuelGetMessage(OCG_Duel pduel, uint32_t* length) {
 	pduel->generate_buffer();
 	if(length)
 		*length = static_cast<uint32_t>(pduel->buff.size());
 	return pduel->buff.data();
 }
 
-OCGAPI void OCG_DuelSetResponse(OCG_Duel ocg_duel, const void* buffer, uint32_t length) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void OCG_DuelSetResponse(OCG_Duel pduel, const void* buffer, uint32_t length) {
 	pduel->set_response(buffer, length);
 }
 
-OCGAPI int OCG_LoadScript(OCG_Duel ocg_duel, const char* buffer, uint32_t length, const char* name) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI int OCG_LoadScript(OCG_Duel pduel, const char* buffer, uint32_t length, const char* name) {
 	return pduel->lua->load_script(buffer, length, name);
 }
 
-OCGAPI uint32_t OCG_DuelQueryCount(OCG_Duel ocg_duel, uint8_t team, uint32_t loc) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI uint32_t OCG_DuelQueryCount(OCG_Duel pduel, uint8_t team, uint32_t loc) {
 	if(team > 1)
 		return 0;
 	auto& player = pduel->game_field->player[team];
@@ -154,8 +147,7 @@ __forceinline void insert_value(std::vector<uint8_t>& vec, T2 val) {
 	insert_value_int<T>(vec, static_cast<T>(val));
 }
 
-OCGAPI void* OCG_DuelQuery(OCG_Duel ocg_duel, uint32_t* length, OCG_QueryInfo info) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void* OCG_DuelQuery(OCG_Duel pduel, uint32_t* length, OCG_QueryInfo info) {
 	pduel->query_buffer.clear();
 	card* pcard = nullptr;
 	if(info.loc & LOCATION_OVERLAY) {
@@ -178,8 +170,7 @@ OCGAPI void* OCG_DuelQuery(OCG_Duel ocg_duel, uint32_t* length, OCG_QueryInfo in
 	return pduel->query_buffer.data();
 }
 
-OCGAPI void* OCG_DuelQueryLocation(OCG_Duel ocg_duel, uint32_t* length, OCG_QueryInfo info) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void* OCG_DuelQueryLocation(OCG_Duel pduel, uint32_t* length, OCG_QueryInfo info) {
 	auto& buffer = pduel->query_buffer;
 	auto populate = [&flags = info.flags, &buffer](const card_vector& list) {
 		for(auto& pcard : list) {
@@ -220,8 +211,7 @@ OCGAPI void* OCG_DuelQueryLocation(OCG_Duel ocg_duel, uint32_t* length, OCG_Quer
 	return buffer.data();
 }
 
-OCGAPI void* OCG_DuelQueryField(OCG_Duel ocg_duel, uint32_t* length) {
-	auto* pduel = static_cast<duel*>(ocg_duel);
+OCGAPI void* OCG_DuelQueryField(OCG_Duel pduel, uint32_t* length) {
 	auto& query = pduel->query_buffer;
 	query.clear();
 	//insert_value<int8_t>(query, MSG_RELOAD_FIELD);
