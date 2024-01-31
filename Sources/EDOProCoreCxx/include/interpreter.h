@@ -1,26 +1,22 @@
 /*
- * interpreter.h
+ * Copyright (c) 2010-2015, Argon Sun (Fluorohydride)
+ * Copyright (c) 2017-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
  *
- *  Created on: 2010-4-28
- *      Author: Argon
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
 #ifndef INTERPRETER_H_
 #define INTERPRETER_H_
 
 // Due to longjmp behaviour, we must build Lua as C++ to avoid UB
+#include <cstdio> //std::snprintf
+#include <lauxlib.h>
+#include <list>
 #include <lua.h>
 #include <lualib.h>
-#include <lauxlib.h>
-
-#include "common.h"
 #include <unordered_map>
-#include <list>
-#include <vector>
 #include <utility> //std::forward
-#include <cstdio>
-#include <cstring>
-#include <cmath>
+#include <vector>
+#include "common.h"
 #include "lua_obj.h"
 #include "ocgapi_types.h"
 
@@ -29,7 +25,7 @@ class effect;
 class group;
 class duel;
 
-using lua_invalid = lua_obj_helper<PARAM_TYPE_DELETED>;
+using lua_invalid = lua_obj_helper<LuaParam::DELETED>;
 
 class interpreter {
 	char msgbuf[128];
@@ -40,14 +36,14 @@ public:
 		lua_Integer integer;
 	};
 private:
-	void add_param(lua_param param, LuaParamType type, bool front) {
+	void add_param(lua_param param, LuaParam type, bool front) {
 		if(front)
 			params.emplace_front(param, type);
 		else
 			params.emplace_back(param, type);
 	}
 public:
-	using param_list = std::list<std::pair<lua_param, LuaParamType>>;
+	using param_list = std::list<std::pair<lua_param, LuaParam>>;
 	
 	duel* pduel;
 	lua_State* lua_state;
@@ -70,18 +66,18 @@ public:
 
 	bool load_script(const char* buffer, int len = 0, const char* script_name = nullptr);
 	bool load_card_script(uint32_t code);
-	template<LuaParamType type, typename T>
+	template<LuaParam type, typename T>
 	void add_param(T* param, bool front = false) {
-		static_assert(type == PARAM_TYPE_STRING || type == PARAM_TYPE_CARD || type == PARAM_TYPE_GROUP || type == PARAM_TYPE_EFFECT,
-					  "Passed parameter type doesn't match provided LuaParamType");
+		static_assert(type == LuaParam::STRING || type == LuaParam::CARD || type == LuaParam::GROUP || type == LuaParam::EFFECT,
+					  "Passed parameter type doesn't match provided LuaParam");
 		lua_param p;
 		p.ptr = param;
 		add_param(p, type, front);
 	}
-	template<LuaParamType type, typename T>
+	template<LuaParam type, typename T>
 	void add_param(T param, bool front = false) {
-		static_assert(type == PARAM_TYPE_INT || type == PARAM_TYPE_FUNCTION || type == PARAM_TYPE_BOOLEAN || type == PARAM_TYPE_INDEX,
-					  "Passed parameter type doesn't match provided LuaParamType");
+		static_assert(type == LuaParam::INT || type == LuaParam::FUNCTION || type == LuaParam::BOOLEAN || type == LuaParam::INDEX,
+					  "Passed parameter type doesn't match provided LuaParam");
 		lua_param p;
 		p.integer = param;
 		add_param(p, type, front);

@@ -1,67 +1,64 @@
 /*
- * effect.h
+ * Copyright (c) 2010-2015, Argon Sun (Fluorohydride)
+ * Copyright (c) 2016-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
  *
- *  Created on: 2010-3-13
- *      Author: Argon
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
 #ifndef EFFECT_H_
 #define EFFECT_H_
 
-#include <cstdlib>
+#include <lua.h> //lua_Integer
 #include <vector>
-#include <map>
 #include "common.h"
-#include "lua_obj.h"
-#include "field.h"
 #include "effect_constants.h"
+#include "lua_obj.h"
 
 class card;
 class duel;
 class group;
+struct chain;
 struct tevent;
 enum effect_flag : uint32_t;
 enum effect_flag2 : uint32_t;
 
-class effect : public lua_obj_helper<PARAM_TYPE_EFFECT> {
+class effect : public lua_obj_helper<LuaParam::EFFECT> {
 public:
-	card* owner{ nullptr };
-	card* handler{ nullptr };
+	uint8_t count_limit{};
+	uint8_t count_limit_max{};
+	uint8_t count_flag{};
+	uint8_t count_hopt_index{};
 	uint8_t effect_owner{ PLAYER_NONE };
-	uint64_t description{};
-	uint32_t code{};
-	uint32_t flag[2]{};
-	uint32_t id{};
 	uint16_t type{};
 	uint16_t copy_id{};
 	uint16_t range{};
 	uint16_t s_range{};
 	uint16_t o_range{};
-	uint8_t count_limit{};
-	uint8_t count_limit_max{};
 	uint16_t reset_count{};
+	uint16_t active_location{};
+	uint16_t active_sequence{};
+	uint16_t status{};
+	uint32_t code{};
+	uint32_t flag[2]{};
+	uint32_t id{};
 	uint32_t reset_flag{};
 	uint32_t count_code{};
-	uint8_t count_flag{};
-	uint8_t count_hopt_index{};
 	uint32_t category{};
 	uint32_t hint_timing[2]{};
 	uint32_t card_type{};
 	uint32_t active_type{};
-	uint16_t active_location{};
-	uint16_t active_sequence{};
-	card* active_handler{};
-	uint16_t status{};
 	int32_t label_object{};
 	int32_t condition{};
 	int32_t cost{};
 	int32_t target{};
 	int32_t value{};
 	int32_t operation{};
+	card* owner{ nullptr };
+	card* handler{ nullptr };
+	card* active_handler{};
+	uint64_t description{};
 	std::vector<lua_Integer> label;
 
-	explicit effect(duel* pd) : lua_obj_helper(pd) {};
-	~effect() = default;
+	explicit effect(duel* pd) : lua_obj_helper(pd) {}
 
 	int32_t is_disable_related();
 	int32_t is_self_destroy_related();
@@ -100,6 +97,7 @@ public:
 	void* get_label_object();
 	int32_t get_speed();
 	effect* clone(int32_t majestic = FALSE);
+	card* get_real_handler() const;
 	card* get_owner() const;
 	uint8_t get_owner_player();
 	card* get_handler() const;

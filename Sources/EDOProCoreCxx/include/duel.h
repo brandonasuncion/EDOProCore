@@ -1,23 +1,23 @@
 /*
- * duel.h
+ * Copyright (c) 2010-2015, Argon Sun (Fluorohydride)
+ * Copyright (c) 2016-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
  *
- *  Created on: 2010-4-8
- *      Author: Argon
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
 #ifndef DUEL_H_
 #define DUEL_H_
 
+#include <deque>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility> //std::forward
+#include <vector>
 #include "common.h"
-#include "ocgapi_types.h"
 #include "group.h"
 #include "interpreter.h"
+#include "ocgapi_types.h"
 #include "RNG/Xoshiro256.hpp"
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <vector>
-#include <deque>
 
 class card;
 class effect;
@@ -38,7 +38,7 @@ struct card_data {
 	uint32_t rscale{};
 	uint32_t link_marker{};
 	card_data(const OCG_CardData& data);
-	card_data() {};
+    card_data() = default;
 };
 
 class duel {
@@ -55,7 +55,7 @@ public:
 		void write(const void* buff, size_t size);
 		void write(loc_info loc);
 		template<typename T, typename T2>
-		__forceinline void write(T2 data) {
+		ForceInline void write(T2 data) {
 			write_internal<T>(static_cast<T>(data));
 		}
 	};
@@ -115,8 +115,8 @@ public:
 	inline int read_script(const char* name) {
 		return read_script_callback(read_script_payload, this, name);
 	}
-    std::deque<duel_message> messages;
 private:
+	std::deque<duel_message> messages;
 	RNG::Xoshiro256StarStar random;
 	OCG_DataReader read_card_callback;
 	OCG_ScriptReader read_script_callback;

@@ -1,8 +1,28 @@
+/*
+ * Copyright (c) 2019, Dylam De La Torre, (DyXel)
+ * Copyright (c) 2019-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 #ifndef OCGAPI_H
 #define OCGAPI_H
 #include "ocgapi_types.h"
 
-#define OCGAPI __attribute__ ((visibility ("default")))
+#ifdef __cplusplus
+#define EXTERN_C extern "C"
+#else
+#define EXTERN_C
+#endif
+
+#if defined(OCGCORE_EXPORT_FUNCTIONS)
+#if defined(_WIN32)
+#define OCGAPI EXTERN_C __declspec(dllexport)
+#else
+#define OCGAPI EXTERN_C __attribute__ ((visibility ("default")))
+#endif
+#else
+#define OCGAPI EXTERN_C
+#endif
 
 /*** CORE INFORMATION ***/
 OCGAPI void OCG_GetVersion(int* major, int* minor);

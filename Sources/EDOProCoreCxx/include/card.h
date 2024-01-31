@@ -1,29 +1,27 @@
 /*
- * card.h
+ * Copyright (c) 2010-2015, Argon Sun (Fluorohydride)
+ * Copyright (c) 2017-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
  *
- *  Created on: 2010-4-8
- *      Author: Argon
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
 #ifndef CARD_H_
 #define CARD_H_
 
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include "containers_fwd.h"
 #include "common.h"
-#include "lua_obj.h"
-#include "effectset.h"
 #include "duel.h"
-#include <set>
-#include <map>
-#include <unordered_set>
-#include <unordered_map>
-#include <tuple>
+#include "lua_obj.h"
 
 class card;
 class duel;
 class effect;
 class group;
 struct chain;
+struct card_data;
 
 struct loc_info {
 	uint8_t controler;
@@ -80,7 +78,7 @@ struct card_state {
 	void set0xff();
 };
 
-class card : public lua_obj_helper<PARAM_TYPE_CARD> {
+class card : public lua_obj_helper<LuaParam::CARD> {
 public:
 	struct effect_relation_hash {
 		inline std::size_t operator()(const std::pair<effect*, uint16_t>& v) const {
@@ -160,6 +158,7 @@ public:
 	card* equiping_target{};
 	card* pre_equip_target{};
 	card* overlay_target{};
+	card* pre_overlay_target{};
 	relation_map relations;
 	counter_map counters;
 	effect_count indestructable_effects;
@@ -194,16 +193,16 @@ public:
 	uint32_t second_code(uint32_t code);
 	uint32_t get_code();
 	uint32_t get_another_code();
-	void get_summon_code(std::set<uint32_t>& codes, card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
+	void get_summon_code(std::set<uint32_t>& codes, card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
 	int32_t is_set_card(uint16_t set_code);
 	int32_t is_origin_set_card(uint16_t set_code);
 	int32_t is_pre_set_card(uint16_t set_code);
-	int32_t is_summon_set_card(uint16_t set_code, card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
+	int32_t is_summon_set_card(uint16_t set_code, card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
 	void get_set_card(std::set<uint16_t>& setcodes);
 	const std::set<uint16_t>& get_origin_set_card() const { return data.setcodes; }
 	void get_pre_set_card(std::set<uint16_t>& setcodes);
-	void get_summon_set_card(std::set<uint16_t>& setcodes, card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
-	uint32_t get_type(card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
+	void get_summon_set_card(std::set<uint16_t>& setcodes, card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
+	uint32_t get_type(card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
 	int32_t get_base_attack();
 	int32_t get_attack();
 	int32_t get_base_defense();
@@ -214,8 +213,8 @@ public:
 	uint32_t get_synchro_level(card* pcard);
 	uint32_t get_ritual_level(card* pcard);
 	uint32_t check_xyz_level(card* pcard, uint32_t lv);
-	uint32_t get_attribute(card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
-	uint64_t get_race(card* scard = 0, uint64_t sumtype = 0, uint8_t playerid = 2);
+	uint32_t get_attribute(card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
+	uint64_t get_race(card* scard = nullptr, uint64_t sumtype = 0, uint8_t playerid = 2);
 	uint32_t get_lscale();
 	uint32_t get_rscale();
 	uint32_t get_link_marker();
@@ -268,7 +267,7 @@ public:
 	void reset(uint32_t id, uint32_t reset_type);
 	void reset_effect_count();
 	void refresh_disable_status();
-	std::tuple<uint8_t, effect*> refresh_control_status();
+	std::pair<uint8_t, effect*> refresh_control_status();
 
 	void count_turn(uint16_t ct);
 	void create_relation(card* target, uint32_t reset);
@@ -287,7 +286,7 @@ public:
 	int32_t remove_counter(uint16_t countertype, uint16_t count);
 	int32_t is_can_add_counter(uint8_t playerid, uint16_t countertype, uint16_t count, uint8_t singly, uint32_t loc);
 	int32_t get_counter(uint16_t countertype);
-	void set_material(card_set* materials);
+	void set_material(card_set materials);
 	void add_card_target(card* pcard);
 	void cancel_card_target(card* pcard);
 	void clear_card_target();
@@ -336,7 +335,7 @@ public:
 	int32_t is_removeable(uint8_t playerid, uint8_t pos = POS_FACEUP, uint32_t reason = REASON_EFFECT);
 	int32_t is_removeable_as_cost(uint8_t playerid, uint8_t pos = POS_FACEUP);
 	int32_t is_releasable_by_summon(uint8_t playerid, card* pcard);
-	int32_t is_releasable_by_nonsummon(uint8_t playerid);
+	int32_t is_releasable_by_nonsummon(uint8_t playerid, uint32_t reason);
 	int32_t is_releasable_by_effect(uint8_t playerid, effect* peffect);
 	int32_t is_capable_send_to_grave(uint8_t playerid);
 	int32_t is_capable_send_to_hand(uint8_t playerid);
@@ -356,7 +355,7 @@ public:
 	int32_t is_capable_be_battle_target(card* pcard);
 	int32_t is_capable_be_effect_target(effect* peffect, uint8_t playerid);
 	int32_t is_can_be_fusion_material(card* fcard, uint64_t summon_type, uint8_t playerid);
-	int32_t is_can_be_synchro_material(card* scard, uint8_t playerid, card* tuner = 0);
+	int32_t is_can_be_synchro_material(card* scard, uint8_t playerid, card* tuner = nullptr);
 	int32_t is_can_be_ritual_material(card* scard, uint8_t playerid);
 	int32_t is_can_be_xyz_material(card* scard, uint8_t playerid, uint32_t reason);
 	int32_t is_can_be_link_material(card* scard, uint8_t playerid);

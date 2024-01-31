@@ -1,16 +1,16 @@
 /*
- * duel.cpp
+ * Copyright (c) 2010-2015, Argon Sun (Fluorohydride)
+ * Copyright (c) 2017-2024, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
  *
- *  Created on: 2010-5-2
- *      Author: Argon
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
-#include "duel.h"
-#include "interpreter.h"
-#include "field.h"
+#include <array>
+#include <cstring> //std::memcpy
 #include "card.h"
+#include "duel.h"
 #include "effect.h"
-#include "group.h"
+#include "field.h"
+#include "interpreter.h"
 
 duel::duel(const OCG_DuelOptions& options) :
 	random(std::array<uint64_t,4>{ { options.seed[0], options.seed[1], options.seed[2], options.seed[3] } }),
@@ -33,7 +33,7 @@ duel::~duel() {
 	delete game_field;
 	delete lua;
 }
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang_analyzer__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
@@ -141,8 +141,7 @@ int32_t duel::get_next_integer(int32_t l, int32_t h) {
 	return static_cast<int32_t>((n % range) + l);
 }
 duel::duel_message* duel::new_message(uint8_t message) {
-	messages.emplace_back(message);
-	return &(messages.back());
+	return &(messages.emplace_back(message));
 }
 const card_data& duel::read_card(uint32_t code) {
 	card_data* ret;
